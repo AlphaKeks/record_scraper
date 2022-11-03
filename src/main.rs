@@ -61,6 +61,10 @@ async fn main() {
 	// };
 
 	for i in start_id.. {
+		if count != 0 && i == start_id + count {
+			break;
+		}
+
 		let record = match get_record(&i, &client).await {
 			Ok(record) => record,
 			Err(_) => {
@@ -71,10 +75,6 @@ async fn main() {
 		};
 
 		write_to_file(record, &mut output_file);
-
-		if count != 0 && i - start_id == count {
-			break;
-		}
 
 		// sleep to avoid rate limiting
 		std::thread::sleep(SLEEP_TIME);
