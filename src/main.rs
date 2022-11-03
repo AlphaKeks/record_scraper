@@ -54,17 +54,27 @@ async fn main() {
 
 	let client = reqwest::Client::new();
 
-	for i in 0..count {
-		let current = start_id + i;
-		let record = match get_record(&current, &client).await {
+	// why can I not do this bro fuck you
+	// let range: std::ops::Range<u32> = match count {
+	// 	0 => start_id..,
+	// 	n => start_id..n,
+	// };
+
+	for i in start_id.. {
+		let record = match get_record(&i, &client).await {
 			Ok(record) => record,
-			Err(why) => {
-				println!("Failed request {}: {:?}", current, why);
+			Err(_) => {
+				println!("Reached most recent record (#{}). Sleeping for 5 minutes.", &i);
+				std::thread::sleep(Duration::from_secs(60 * 5));
 				continue;
 			},
 		};
 
 		write_to_file(record, &mut output_file);
+
+		if count != 0 && i - start_id == count {
+			break;
+		}
 
 		// sleep to avoid rate limiting
 		std::thread::sleep(SLEEP_TIME);
