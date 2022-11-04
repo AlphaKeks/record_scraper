@@ -10,18 +10,18 @@ use std::{
 const SLEEP_TIME: Duration = Duration::from_millis(727);
 
 enum UserInput {
-	ID(usize),
+	ID(u32),
 	Path(String),
 }
 
 #[tokio::main(flavor = "multi_thread", worker_threads = 4)]
 async fn main() {
-	let start_id: usize = match get_input("Which ID do you want to start at?", true) {
+	let start_id: u32 = match get_input("Which ID do you want to start at?", true) {
 		UserInput::ID(id) => id,
 		UserInput::Path(_) => unreachable!(),
 	};
 
-	let count: usize = match get_input("How many records do you want to fetch?", true) {
+	let count: u32 = match get_input("How many records do you want to fetch?", true) {
 		UserInput::ID(count) => count,
 		UserInput::Path(_) => unreachable!(),
 	};
@@ -61,12 +61,12 @@ async fn main() {
 	let client = reqwest::Client::new();
 
 	let range = match count {
-		0 => start_id..usize::MAX, // not truly an infinite loop, but should be enough anyway
+		0 => start_id..u32::MAX, // not truly an infinite loop, but should be enough anyway
 		n => start_id..(start_id + n),
 	};
 
 	for i in range {
-		let record = match get_record(&(i as u32), &client).await {
+		let record = match get_record(&i, &client).await {
 			Ok(record) => record,
 			Err(_) => {
 				println!("Record #{} not found. Sleeping for 5 minutes.", &i);
@@ -93,7 +93,7 @@ fn get_input<'a>(msg: &'a str, is_number: bool) -> UserInput {
 	let input = input.trim();
 
 	if is_number {
-		let Ok(id) = input.parse::<usize>() else {
+		let Ok(id) = input.parse::<u32>() else {
 			println!(
 				"`{}` is not a valid input. Please input a positive integer.",
 				input
